@@ -2,7 +2,7 @@
 const N8N_WEBHOOK_URL = 'https://nguyenzap.app.n8n.cloud/webhook/ec52427b-8233-425e-ab5a-def5a852ea13';
 
 // TODO: replace with your Teenshop public API base
-const API_BASE_URL = 'https://teenshop.vn';
+const API_BASE_URL = 'https://api.teenshop.vn';
 
 const chatBox = document.getElementById('chat-box');
 const chatForm = document.getElementById('chat-form');
@@ -33,7 +33,7 @@ chatForm.addEventListener('submit', async e => {
 loadProductsBtn.addEventListener('click', async () => {
   productList.innerHTML = '<li>Loading…</li>';
   try {
-    const resp = await fetch(`${API_BASE_URL}/api/products`);
+    const resp = await fetch(`${API_BASE_URL}/products`);
     const products = await resp.json();
     productList.innerHTML = '';
     products.forEach(p => {
