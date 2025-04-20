@@ -1,61 +1,90 @@
-// TODO: replace with your real n8n webhook URL
-const N8N_WEBHOOK_URL = 'https://nguyenzap.app.n8n.cloud/webhook/ec52427b-8233-425e-ab5a-def5a852ea13';
+// update the clock
+function updateTime() {
+  document.getElementById("datetime").innerText = new Date().toLocaleString();
+}
+updateTime();
+setInterval(updateTime, 1000);
 
-// TODO: replace with your Teenshop public API base
-const API_BASE_URL = 'https://api.teenshop.vn';
+// send chat message
+async function sendChat() {
+  const inputEl = document.getElementById("chat-input");
+  const output = document.getElementById("chat-output");
+  const input = inputEl.value.trim();
+  inputEl.value = "";
+  if (!input) return;
 
-const chatBox = document.getElementById('chat-box');
-const chatForm = document.getElementById('chat-form');
-const messageInput = document.getElementById('message-input');
-const loadProductsBtn = document.getElementById('load-products');
-const productList = document.getElementById('product-list');
+  // user message
+  const userMsg = document.createElement("div");
+  userMsg.className = "message user-message";
+  userMsg.innerText = input;
+  output.appendChild(userMsg);
 
-chatForm.addEventListener('submit', async e => {
-  e.preventDefault();
-  const text = messageInput.value.trim();
-  if (!text) return;
-  appendMessage(text, 'user');
-  messageInput.value = '';
+  // fetch bot reply
   try {
-    const resp = await fetch(N8N_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text })
+    const response = await fetch("http://localhost:5000/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: input })
     });
-    const data = await resp.json();
-    appendMessage(data.reply || 'No response', 'bot');
+    const data = await response.json();
+    const sofMsg = document.createElement("div");
+    sofMsg.className = "message sof-message";
+    sofMsg.innerText = data.reply;
+    output.appendChild(sofMsg);
   } catch (err) {
-    appendMessage('Error contacting agent', 'bot');
     console.error(err);
+  }
+
+  inputEl.focus();
+  output.scrollTop = output.scrollHeight;
+}
+
+// submit on Enter
+document.getElementById("chat-input").addEventListener("keypress", function(e) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    sendChat();
   }
 });
 
-loadProductsBtn.addEventListener('click', async () => {
-  productList.innerHTML = '<li>Loading…</li>';
-  try {
-    const resp = await fetch(`${API_BASE_URL}/products`);
-    const products = await resp.json();
-    productList.innerHTML = '';
-    products.forEach(p => {
-      const li = document.createElement('li');
-      li.textContent = `${p.name} — ${p.sale_price || p.price}₫`;
-      productList.appendChild(li);
-    });
-  } catch (err) {
-    productList.innerHTML = '<li>Error loading products</li>';
-    console.error(err);
+// image zoom
+function zoomImage(src) {
+  document.getElementById("zoomed-img").src = src;
+  document.getElementById("zoom-overlay").style.display = "flex";
+}
+function hideZoom() {
+  document.getElementById("zoom-overlay").style.display = "none";
+  document.getElementById("zoomed-img").src = "";
+}
+
+// drag & drop chat window
+const chatbotBox = document.getElementById("chatbot-box");
+const chatbotHeader = document.getElementById("chatbot-header");
+let isDragging = false, offsetX = 0, offsetY = 0;
+
+chatbotHeader.addEventListener("mousedown", function(e) {
+  isDragging = true;
+  offsetX = e.clientX - chatbotBox.offsetLeft;
+  offsetY = e.clientY - chatbotBox.offsetTop;
+  chatbotHeader.style.cursor = "grabbing";
+});
+document.addEventListener("mouseup", function() {
+  isDragging = false;
+  chatbotHeader.style.cursor = "grab";
+});
+document.addEventListener("mousemove", function(e) {
+  if (isDragging) {
+    chatbotBox.style.left = `${e.clientX - offsetX}px`;
+    chatbotBox.style.top = `${e.clientY - offsetY}px`;
   }
 });
 
-/**
- * Append a chat message to the chat box.
- * @param {string} text 
- * @param {'user'|'bot'} sender 
- */
-function appendMessage(text, sender) {
-  const div = document.createElement('div');
-  div.className = `chat-message ${sender}`;
-  div.textContent = text;
-  chatBox.appendChild(div);
-  chatBox.scrollTop = chatBox.scrollHeight;
+// minimize / restore
+function minimizeChat() {
+  chatbotBox.style.display = "none";
+  document.getElementById("chatbot-circle").style.display = "flex";
+}
+function restoreChat() {
+  chatbotBox.style.display = "flex";
+  document.getElementById("chatbot-circle").style.display = "none";
 }
