@@ -1,8 +1,8 @@
 // TODO: replace with your real n8n webhook URL
-const N8N_WEBHOOK_URL = 'https://your-n8n-domain.com/webhook/your-workflow';
+const N8N_WEBHOOK_URL = 'https://nguyenzap.app.n8n.cloud/webhook/ec52427b-8233-425e-ab5a-def5a852ea13';
 
 // TODO: replace with your Teenshop public API base
-const API_BASE_URL = 'https://api.teenshop.vn';
+const API_BASE_URL = 'https://teenshop.vn';
 
 const chatBox = document.getElementById('chat-box');
 const chatForm = document.getElementById('chat-form');
