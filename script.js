@@ -1,30 +1,28 @@
-// script.js
-
-// 1) Clock
+// update the clock
 function updateTime() {
   document.getElementById("datetime").innerText = new Date().toLocaleString();
 }
 updateTime();
 setInterval(updateTime, 1000);
 
-// 2) Send & receive via n8n webhook (All Incoming Items)
+// send chat message
 async function sendChat() {
   const inputEl = document.getElementById("chat-input");
-  const output  = document.getElementById("chat-output");
-  const text    = inputEl.value.trim();
-  inputEl.value = "";
+  const output   = document.getElementById("chat-output");
+  const text     = inputEl.value.trim();
+  inputEl.value  = "";
   if (!text) return;
 
-  // render user message
+  // show user's message
   const userMsg = document.createElement("div");
   userMsg.className = "message user-message";
   userMsg.innerText = text;
   output.appendChild(userMsg);
 
   try {
-    // POST user text as plain text
+    // post plain‑text to your n8n webhook
     const resp = await fetch(
-      "https://nguyenzap.app.n8n.cloud/webhook-test/3c610538-a318-4b0a-bcd4-f12e17dc4b48",
+      "https://nguyenzap.app.n8n.cloud/webhook/3c610538-a318-4b0a-bcd4-f12e17dc4b48",
       {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
@@ -32,18 +30,12 @@ async function sendChat() {
       }
     );
 
-    // parse full JSON array of incoming items
-    const data = await resp.json();
+    // read back the agent's reply as plain text
+    const replyText = await resp.text();
 
-    // render raw JSON response
     const botMsg = document.createElement("div");
     botMsg.className = "message sof-message";
-    // show nicely formatted JSON
-    const pre = document.createElement("pre");
-    pre.style.whiteSpace = "pre-wrap";
-    pre.style.wordBreak  = "break-word";
-    pre.innerText = JSON.stringify(data, null, 2);
-    botMsg.appendChild(pre);
+    botMsg.innerText = replyText;
     output.appendChild(botMsg);
 
   } catch (err) {
@@ -54,21 +46,22 @@ async function sendChat() {
     output.appendChild(errMsg);
   }
 
-  // scroll & refocus
+  // scroll to bottom
   output.scrollTop = output.scrollHeight;
   inputEl.focus();
 }
 
-// 3) Send on Enter
-document.getElementById("chat-input")
-  .addEventListener("keypress", e => {
+// support Enter key
+document
+  .getElementById("chat-input")
+  .addEventListener("keypress", function (e) {
     if (e.key === "Enter") {
       e.preventDefault();
       sendChat();
     }
   });
 
-// 4) Zoom handlers
+// image zoom
 function zoomImage(src) {
   document.getElementById("zoomed-img").src = src;
   document.getElementById("zoom-overlay").style.display = "flex";
@@ -77,29 +70,29 @@ function hideZoom() {
   document.getElementById("zoom-overlay").style.display = "none";
 }
 
-// 5) Drag & drop window
+// drag & drop chat window
 const chatbotBox    = document.getElementById("chatbot-box");
 const chatbotHeader = document.getElementById("chatbot-header");
 let isDragging = false, offsetX = 0, offsetY = 0;
 
-chatbotHeader.addEventListener("mousedown", e => {
+chatbotHeader.addEventListener("mousedown", function (e) {
   isDragging = true;
   offsetX    = e.clientX - chatbotBox.offsetLeft;
   offsetY    = e.clientY - chatbotBox.offsetTop;
   chatbotHeader.style.cursor = "grabbing";
 });
-document.addEventListener("mouseup", () => {
+document.addEventListener("mouseup", function () {
   isDragging = false;
   chatbotHeader.style.cursor = "grab";
 });
-document.addEventListener("mousemove", e => {
+document.addEventListener("mousemove", function (e) {
   if (isDragging) {
     chatbotBox.style.left = `${e.clientX - offsetX}px`;
     chatbotBox.style.top  = `${e.clientY - offsetY}px`;
   }
 });
 
-// 6) Minimize / Restore
+// minimize / restore
 function minimizeChat() {
   chatbotBox.style.display = "none";
   document.getElementById("chatbot-circle").style.display = "flex";
