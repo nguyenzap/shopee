@@ -3,168 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>ChatBot Teenshop</title>
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-    }
-    .chatbot-box {
-      width: 80vw;
-      height: 80vh;
-      background-color: #ff7f1f;
-      border-radius: 20px;
-      padding: 20px;
-      position: absolute;
-      top: 50px;
-      left: 50px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      resize: both;
-      overflow: auto;
-      cursor: move;
-      transition: all 0.3s ease;
-    }
-    .chatbot-header {
-      display: flex;
-      justify-content: space-between;
-      font-size: 20px;
-      font-weight: bold;
-      color: white;
-      cursor: grab;
-    }
-    .minimize-btn {
-      background: transparent;
-      border: none;
-      color: white;
-      font-size: 18px;
-      cursor: pointer;
-      margin-left: 10px;
-    }
-    .chatbot-product-box {
-      background: white;
-      border-radius: 10px;
-      padding: 10px;
-      margin: 20px 0;
-      display: flex;
-      gap: 15px;
-      align-items: center;
-      resize: both;
-      overflow: auto;
-    }
-    .chatbot-product-box img {
-      width: 100px;
-      height: 100px;
-      border-radius: 8px;
-      object-fit: cover;
-      cursor: pointer;
-    }
-    .product-details {
-      flex: 1;
-    }
-    .product-details p {
-      margin: 5px 0;
-    }
-    .product-buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .product-buttons button {
-      padding: 6px 12px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      background-color: #fff;
-      color: #ff7f1f;
-      font-weight: bold;
-    }
-    .chat-area {
-      background: white;
-      border-radius: 10px;
-      padding: 10px;
-      margin-bottom: 10px;
-      flex-grow: 1;
-      overflow-y: auto;
-      resize: both;
-    }
-    .message {
-      margin: 5px 0;
-      padding: 8px 12px;
-      max-width: 70%;
-      border-radius: 10px;
-      clear: both;
-    }
-    .sof-message {
-      background-color: #ffffff;
-      float: left;
-      text-align: left;
-    }
-    .user-message {
-      background-color: #ffe4c2;
-      float: right;
-      text-align: right;
-    }
-    .input-box {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      resize: both;
-      overflow: auto;
-    }
-    .input-box input {
-      flex: 1;
-      padding: 10px;
-      border-radius: 10px;
-      border: none;
-    }
-    .input-box button {
-      padding: 10px 15px;
-      border-radius: 10px;
-      border: none;
-      background: #fff;
-      color: #ff7f1f;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .zoom-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: rgba(0, 0, 0, 0.7);
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-    .zoom-overlay img {
-      max-width: 90vw;
-      max-height: 90vh;
-      border-radius: 10px;
-    }
-    .chatbot-circle {
-      display: none;
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 60px;
-      height: 60px;
-      background-color: #ff7f1f;
-      border-radius: 50%;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      cursor: pointer;
-      z-index: 999;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      font-size: 28px;
-      font-weight: bold;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="chatbot-box" id="chatbot-box">
@@ -177,7 +16,9 @@
     </div>
 
     <div class="chatbot-product-box">
-      <img src="https://via.placeholder.com/100" alt="Sản phẩm" onclick="zoomImage(this.src)">
+      <img src="https://via.placeholder.com/100"
+           alt="Sản phẩm"
+           onclick="zoomImage(this.src)">
       <div class="product-details">
         <p><b>Tên:</b> Ly thủy tinh cao cấp</p>
         <p><b>Mô tả:</b> Dung tích 350ml, thiết kế đẹp mắt</p>
@@ -190,7 +31,9 @@
     </div>
 
     <div class="chat-area" id="chat-output">
-      <div class="message sof-message">Xin chào! Bạn muốn tìm sản phẩm gì hôm nay?</div>
+      <div class="message sof-message">
+        Xin chào! Bạn muốn tìm sản phẩm gì hôm nay?
+      </div>
     </div>
 
     <div class="input-box">
@@ -199,100 +42,14 @@
     </div>
   </div>
 
-  <div class="chatbot-circle" id="chatbot-circle" onclick="restoreChat()">💬</div>
+  <div class="chatbot-circle" id="chatbot-circle"
+       onclick="restoreChat()">💬</div>
 
-  <div class="zoom-overlay" id="zoom-overlay" onclick="hideZoom()">
+  <div class="zoom-overlay" id="zoom-overlay"
+       onclick="hideZoom()">
     <img id="zoomed-img" src="" alt="Phóng to">
   </div>
 
-  <script>
-    function updateTime() {
-      document.getElementById("datetime").innerText = new Date().toLocaleString();
-    }
-    updateTime();
-    setInterval(updateTime, 1000);
-
-    async function sendChat() {
-      const inputEl = document.getElementById("chat-input");
-      const output = document.getElementById("chat-output");
-      const input = inputEl.value.trim();
-      inputEl.value = "";
-      if (!input) return;
-
-      const userMsg = document.createElement("div");
-      userMsg.className = "message user-message";
-      userMsg.innerText = input;
-      output.appendChild(userMsg);
-
-      const response = await fetch("http://localhost:5000/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ message: input })
-      });
-
-      const data = await response.json();
-      const sofMsg = document.createElement("div");
-      sofMsg.className = "message sof-message";
-      sofMsg.innerText = data.reply;
-      output.appendChild(sofMsg);
-
-      inputEl.focus();
-      output.scrollTop = output.scrollHeight;
-    }
-
-    document.getElementById("chat-input").addEventListener("keypress", function (e) {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        sendChat();
-      }
-    });
-
-    function zoomImage(src) {
-      document.getElementById("zoomed-img").src = src;
-      document.getElementById("zoom-overlay").style.display = "flex";
-    }
-
-    function hideZoom() {
-      document.getElementById("zoom-overlay").style.display = "none";
-      document.getElementById("zoomed-img").src = "";
-    }
-
-    // Kéo thả khung chatbot
-    const chatbotBox = document.getElementById("chatbot-box");
-    const chatbotHeader = document.getElementById("chatbot-header");
-    let isDragging = false, offsetX = 0, offsetY = 0;
-
-    chatbotHeader.addEventListener("mousedown", function (e) {
-      isDragging = true;
-      offsetX = e.clientX - chatbotBox.offsetLeft;
-      offsetY = e.clientY - chatbotBox.offsetTop;
-      chatbotHeader.style.cursor = "grabbing";
-    });
-
-    document.addEventListener("mouseup", function () {
-      isDragging = false;
-      chatbotHeader.style.cursor = "grab";
-    });
-
-    document.addEventListener("mousemove", function (e) {
-      if (isDragging) {
-        chatbotBox.style.left = `${e.clientX - offsetX}px`;
-        chatbotBox.style.top = `${e.clientY - offsetY}px`;
-      }
-    });
-
-    // Thu nhỏ và khôi phục chatbot
-    function minimizeChat() {
-      chatbotBox.style.display = "none";
-      document.getElementById("chatbot-circle").style.display = "flex";
-    }
-
-    function restoreChat() {
-      chatbotBox.style.display = "flex";
-      document.getElementById("chatbot-circle").style.display = "none";
-    }
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
