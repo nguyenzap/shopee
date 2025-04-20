@@ -1,3 +1,5 @@
+// script.js
+
 // 1) Clock
 function updateTime() {
   document.getElementById("datetime").innerText = new Date().toLocaleString();
@@ -5,7 +7,7 @@ function updateTime() {
 updateTime();
 setInterval(updateTime, 1000);
 
-// 2) Send & receive via n8n webhook
+// 2) Send & receive via n8n webhook (All Incoming Items)
 async function sendChat() {
   const inputEl = document.getElementById("chat-input");
   const output  = document.getElementById("chat-output");
@@ -13,32 +15,35 @@ async function sendChat() {
   inputEl.value = "";
   if (!text) return;
 
-  // show user message
+  // render user message
   const userMsg = document.createElement("div");
   userMsg.className = "message user-message";
   userMsg.innerText = text;
   output.appendChild(userMsg);
 
   try {
-    // POST user text
+    // POST user text as plain text
     const resp = await fetch(
       "https://nguyenzap.app.n8n.cloud/webhook-test/3c610538-a318-4b0a-bcd4-f12e17dc4b48",
       {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
-        body: text,
+        body: text
       }
     );
 
-    // parse JSON (first incoming item)
-    const payload = await resp.json();
-    // pull out the field your workflow writes, e.g. "reply"
-    const answer = payload.reply ?? "Không có phản hồi.";
+    // parse full JSON array of incoming items
+    const data = await resp.json();
 
-    // render bot message (with **bold** → <strong>…</strong>)
+    // render raw JSON response
     const botMsg = document.createElement("div");
     botMsg.className = "message sof-message";
-    botMsg.innerHTML = answer.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    // show nicely formatted JSON
+    const pre = document.createElement("pre");
+    pre.style.whiteSpace = "pre-wrap";
+    pre.style.wordBreak  = "break-word";
+    pre.innerText = JSON.stringify(data, null, 2);
+    botMsg.appendChild(pre);
     output.appendChild(botMsg);
 
   } catch (err) {
@@ -72,7 +77,7 @@ function hideZoom() {
   document.getElementById("zoom-overlay").style.display = "none";
 }
 
-// 5) Drag & drop
+// 5) Drag & drop window
 const chatbotBox    = document.getElementById("chatbot-box");
 const chatbotHeader = document.getElementById("chatbot-header");
 let isDragging = false, offsetX = 0, offsetY = 0;
