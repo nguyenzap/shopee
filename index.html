@@ -1,22 +1,227 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>n8n AI Agent Demo</title>
-  <link rel="stylesheet" href="styles.css"/>
+  <meta charset="UTF-8">
+  <title>ChatBot Teenshop</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+    }
+    .chatbot-box {
+      width: 80vw;
+      height: 80vh;
+      background-color: #ff7f1f;
+      border-radius: 20px;
+      padding: 20px;
+      margin: 30px auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      resize: both;
+      overflow: auto;
+    }
+    .chatbot-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 20px;
+      font-weight: bold;
+      color: white;
+    }
+    .chatbot-product-box {
+      background: white;
+      border-radius: 10px;
+      padding: 10px;
+      margin: 20px 0;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      resize: both;
+      overflow: auto;
+    }
+    .chatbot-product-box img {
+      width: 100px;
+      height: 100px;
+      border-radius: 8px;
+      object-fit: cover;
+      cursor: pointer;
+    }
+    .product-details {
+      flex: 1;
+    }
+    .product-details p {
+      margin: 5px 0;
+    }
+    .product-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .product-buttons button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #fff;
+      color: #ff7f1f;
+      font-weight: bold;
+    }
+    .chat-area {
+      background: white;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 10px;
+      flex-grow: 1;
+      overflow-y: auto;
+      resize: both;
+    }
+    .message {
+      margin: 5px 0;
+      padding: 8px 12px;
+      max-width: 70%;
+      border-radius: 10px;
+      clear: both;
+    }
+    .sof-message {
+      background-color: #ffffff;
+      float: left;
+      text-align: left;
+    }
+    .user-message {
+      background-color: #ffe4c2;
+      float: right;
+      text-align: right;
+    }
+    .input-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      resize: both;
+      overflow: auto;
+    }
+    .input-box input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+    }
+    .input-box button {
+      padding: 10px 15px;
+      border-radius: 10px;
+      border: none;
+      background: #fff;
+      color: #ff7f1f;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .zoom-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .zoom-overlay img {
+      max-width: 90vw;
+      max-height: 90vh;
+      border-radius: 10px;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>AI Agent Chat Demo</h1>
-    <div id="chat-box" class="chat-box"></div>
-    <form id="chat-form" class="chat-form">
-      <input id="message-input" type="text" placeholder="Type your message..." required />
-      <button type="submit">Send</button>
-    </form>
-    <button id="load-products">Load Products</button>
-    <ul id="product-list" class="product-list"></ul>
+  <div class="chatbot-box" contenteditable="false">
+    <div class="chatbot-header">
+      <div>SoF</div>
+      <div id="datetime"></div>
+    </div>
+
+    <div class="chatbot-product-box" contenteditable="false">
+      <img src="https://via.placeholder.com/100" alt="Sản phẩm" onclick="zoomImage(this.src)">
+      <div class="product-details">
+        <p><b>Tên:</b> Ly thủy tinh cao cấp</p>
+        <p><b>Mô tả:</b> Dung tích 350ml, thiết kế đẹp mắt</p>
+        <p><b>Giá:</b> 120.000đ</p>
+        <div class="product-buttons">
+          <button>Bỏ giỏ</button>
+          <button>Mua</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-area" id="chat-output">
+      <div class="message sof-message">Xin chào! Bạn muốn tìm sản phẩm gì hôm nay?</div>
+    </div>
+
+    <div class="input-box">
+      <input type="text" id="chat-input" placeholder="Nhập yêu cầu...">
+      <button onclick="sendChat()">Gửi</button>
+    </div>
   </div>
-  <script src="script.js"></script>
+
+  <div class="zoom-overlay" id="zoom-overlay" onclick="hideZoom()">
+    <img id="zoomed-img" src="" alt="Phóng to">
+  </div>
+
+  <script>
+    function updateTime() {
+      document.getElementById("datetime").innerText = new Date().toLocaleString();
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
+
+    async function sendChat() {
+      const inputEl = document.getElementById("chat-input");
+      const output = document.getElementById("chat-output");
+      const input = inputEl.value.trim();
+      inputEl.value = "";
+      if (!input) return;
+
+      const userMsg = document.createElement("div");
+      userMsg.className = "message user-message";
+      userMsg.innerText = input;
+      output.appendChild(userMsg);
+
+      const response = await fetch("http://localhost:5000/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message: input })
+      });
+
+      const data = await response.json();
+      const sofMsg = document.createElement("div");
+      sofMsg.className = "message sof-message";
+      sofMsg.innerText = data.reply;
+      output.appendChild(sofMsg);
+
+      inputEl.focus();
+      output.scrollTop = output.scrollHeight;
+    }
+
+    document.getElementById("chat-input").addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        sendChat();
+      }
+    });
+
+    function zoomImage(src) {
+      document.getElementById("zoomed-img").src = src;
+      document.getElementById("zoom-overlay").style.display = "flex";
+    }
+
+    function hideZoom() {
+      document.getElementById("zoom-overlay").style.display = "none";
+      document.getElementById("zoomed-img").src = "";
+    }
+  </script>
 </body>
 </html>
